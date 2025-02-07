@@ -88,7 +88,7 @@ class Departure:
         return datetime.fromtimestamp(time)
 
 #schedule loop to fetch upcoming departure information from vvo api until time limit is met
-@repeat(every(intervalInMin).minutes.until(time(8, 24, 0)))
+@repeat(every(intervalInMin).minutes.until(time(21, 10, 0)))
 def getDepartures():
     timestamp = (int(mktime(datetime.now(timezone.utc).timetuple())) // 60 * 60) + 3600 #timestamp of request to determine time difference to scheduled time
     date = datetime.fromtimestamp(timestamp)
