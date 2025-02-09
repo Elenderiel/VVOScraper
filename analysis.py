@@ -2,6 +2,7 @@ import sqlite3 as sql
 import pandas
 import matplotlib.pyplot as plt
 import seaborn as sns
+from datetime import datetime
 
 conn = sql.connect('departureDatabase.db')
 cursor = conn.cursor()
@@ -58,5 +59,22 @@ def departuresPerStatus():
     except Exception as e:
         print(f'an exception occured while analysing departures per delay status: {e}')
 
-departuresPerStatus()
+def statusHeatmap():
+    try:
+        cursor.execute("SELECT LineId, ScheduledTime, Status from main_table ORDER BY ScheduledTime")
+        data = cursor.fetchall()
+        df = pandas.DataFrame(data, columns=['LineId', 'scheduledTime', 'status'])
+        valueMap = {'Delayed' : 0, 'Unknown' : 1, 'InTime' : 2}
+        df['status'] = df['status'].map(valueMap)
+        df['scheduledTime'] = pandas.to_datetime(df['scheduledTime'], unit='s').dt.strftime('%H:%M')
+        heatMap = df.pivot(index='LineId', columns='scheduledTime', values='status')
+        plt.style.use('dark_background')
+        fig, ax = plt.subplots()
+        ax.grid(False)
+        sns.heatmap(heatMap, cmap='vlag', linewidths=0.05, linecolor='#333', cbar=False, ax=ax)
+        plt.show()
+    except Exception as e:
+        print(f'an exception occured while analysing status over time: {e}')
+
+statusHeatmap()
 conn.close()
