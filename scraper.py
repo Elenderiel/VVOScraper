@@ -40,7 +40,6 @@ def extractData(timestamp, date, departures):
     try:
         for departure in departures:
             data = {
-                'lineId' : departure['Id'],
                 'network' : departure['Diva']['Network'], 
                 'name' : departure['LineName'], 
                 'scheduledTime' : int(departure['ScheduledTime'][6:-10]),
@@ -67,9 +66,9 @@ def extractData(timestamp, date, departures):
 
 #class to store information in an instance before inserting it into a database, to later be able to add features more easily
 class Departure:
-    def __init__(self, lineId:str, network:str, name:str, scheduledTime:int, direction:str, platform:int, transportationType:str, occupancy:str, status:str, routeChanges:int, cancelReasons:str, timestamp:int, realTime:int):
-        self.id = lineId + '|' + str(scheduledTime)
-        self.lineId = lineId
+    def __init__(self, network:str, name:str, scheduledTime:int, direction:str, platform:int, transportationType:str, occupancy:str, status:str, routeChanges:int, cancelReasons:str, timestamp:int, realTime:int):
+        self.id = name + '|' + str(scheduledTime) + '|' + direction
+        self.lineId = name + '|' + direction
         self.network = network
         self.name = name
         self.scheduledTime = scheduledTime

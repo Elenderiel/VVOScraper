@@ -76,5 +76,28 @@ def statusHeatmap():
     except Exception as e:
         print(f'an exception occured while analysing status over time: {e}')
 
-statusHeatmap()
+def averageDelayPerLine():
+    try:
+        query = """
+                WITH latest_delays AS (
+                    SELECT MainId, DelayTime
+                    FROM delay_table d1
+                    WHERE TimeStamp = (
+                        SELECT MAX(d2.TimeStamp) FROM delay_table d2 WHERE d1.MainId = d2.MainId
+                    )
+                )
+                SELECT m.LineName, AVG(ld.DelayTime) AS avgDelay
+                FROM main_table m
+                JOIN latest_delays ld ON m.Id = ld.MainId
+                GROUP BY m.LineId
+                ORDER BY avgDelay DESC;
+                """
+        df = pandas.read_sql_query(query, conn)
+        print(df)
+        sns.barplot(df, x='LineName', y='avgDelay', order=df['LineName'])
+        plt.show()
+    except Exception as e:
+        print(f'an exception occured while analising average delay per line: {e}')
+
+averageDelayPerLine()
 conn.close()
