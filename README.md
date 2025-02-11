@@ -4,7 +4,7 @@ Scraping all interesting information about public transport connections/departur
 
 ### Usage
 
-To initialize the database, run 'initializeDatabase.py' once. Set the interval, number of departures fetched per request and end time of the schedule loop in 'scraper.py'
+To initialize the database, run 'initializeDatabase.py' once. Set the interval, number of departures fetched per request and end time of the schedule loop in 'scraper.py'. To analyise the fetched data, run 'analysis.py'. The charts will be saved as png in the 'Charts' folder.
 
 ### To Do's:
 
@@ -13,5 +13,5 @@ To initialize the database, run 'initializeDatabase.py' once. Set the interval, 
 
 ### Ideas:
 
-- [ ] run multiple requests in parallel with asyncio, if new features should be added
+- [ ] run multiple requests in parallel with asyncio, if new features should be added (fetch data for multiple stops at once)
 - [ ] add encryption for data
