@@ -4,12 +4,11 @@ Scraping all interesting information about public transport connections/departur
 
 ### Usage
 
-To initialize the database, run 'initializeDatabase.py' once. Set the interval, number of departures fetched per request and end time of the schedule loop in 'scraper.py'. To analyise the fetched data, run 'analysis.py'. The charts will be saved as png in the 'Charts' folder.
+To initialize the database, run 'initializeDatabase.py'. Set the interval, number of departures fetched per request and end time of the schedule loop in 'scraper.py'. To analyise the fetched data, run 'analysis.py'. The charts will be saved in the 'Charts' folder. Set the file type and the needed charts in the script
 
 ### To Do's:
 
-- [ ] Automatic analysis and visualization of the collected data
-- [ ] run data analysis functions in parallel
+- [ ] analyse delay development over time
 
 ### Ideas:
 
