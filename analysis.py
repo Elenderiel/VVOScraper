@@ -6,10 +6,9 @@ import os
 
 def departuresPerLine():
     try:
-        cursor.execute("SELECT lineName, COUNT(*) AS departures FROM main_table GROUP BY lineName ORDER BY departures DESC")
-        departures = cursor.fetchall()
-        df = pandas.DataFrame(departures, columns=['line', 'departures'])
-        sns.barplot(df, x='line', y='departures', order=df['line'])
+        query = "SELECT LineName, COUNT(*) AS departures FROM main_table GROUP BY LineName ORDER BY departures DESC"
+        df = pandas.read_sql_query(query, conn)
+        sns.barplot(df, x='LineName', y='departures', order=df['LineName'])
         plt.tight_layout()
         plt.savefig(f'./Charts/departuresPerLine.{fileType}', bbox_inches='tight')
         plt.close()
@@ -18,10 +17,9 @@ def departuresPerLine():
 
 def departuresPerPlatform():
     try:
-        cursor.execute("SELECT Platform, COUNT(*) AS departures FROM main_table GROUP BY Platform ORDER BY departures DESC")
-        data = cursor.fetchall()
-        df = pandas.DataFrame(data, columns=['platform', 'departures'])
-        sns.barplot(df, x='platform', y='departures', order=df['platform'])
+        query = "SELECT Platform, COUNT(*) AS departures FROM main_table GROUP BY Platform ORDER BY departures DESC"
+        df = pandas.read_sql_query(query, conn)
+        sns.barplot(df, x='Platform', y='departures', order=df['Platform'])
         plt.tight_layout()
         plt.savefig(f'./Charts/departuresPerPlatform.{fileType}', bbox_inches='tight')
         plt.close()
@@ -30,10 +28,9 @@ def departuresPerPlatform():
 
 def departuresPerNetwork():
     try:
-        cursor.execute("SELECT Network, COUNT(*) AS departures FROM main_table GROUP BY Network ORDER BY departures DESC")
-        data = cursor.fetchall()
-        df = pandas.DataFrame(data, columns=['network', 'departures'])
-        sns.barplot(df, x='network', y='departures', order=df['network'])
+        query = "SELECT Network, COUNT(*) AS departures FROM main_table GROUP BY Network ORDER BY departures DESC"
+        df = pandas.read_sql_query(query, conn)
+        sns.barplot(df, x='Network', y='departures', order=df['Network'])
         plt.tight_layout()
         plt.savefig(f'./Charts/departuresPerNetwork.{fileType}', bbox_inches='tight')
         plt.close()
@@ -42,9 +39,8 @@ def departuresPerNetwork():
 
 def departuresPerType():
     try:
-        cursor.execute("SELECT TransportationType, COUNT(*) as departures FROM main_table GROUP BY TransportationType ORDER BY departures")
-        data = cursor.fetchall()
-        df = pandas.DataFrame(data, columns=['type', 'departures'])
+        query = "SELECT TransportationType as type, COUNT(*) as departures FROM main_table GROUP BY type ORDER BY departures"
+        df = pandas.read_sql_query(query, conn)
         sns.barplot(df, x='type', y='departures', order=df['type'])
         plt.tight_layout()
         plt.savefig(f'./Charts/departuresPerType.{fileType}', bbox_inches='tight')
@@ -54,11 +50,10 @@ def departuresPerType():
 
 def departuresPerStatus():
     try:
-        cursor.execute("SELECT Status, COUNT(*) as departures FROM main_table GROUP BY Status")
-        data = cursor.fetchall()
-        df = pandas.DataFrame(data, columns=['status', 'departures'])
+        query = "SELECT Status, COUNT(*) as departures FROM main_table GROUP BY Status"
+        df = pandas.read_sql_query(query, conn)
         colorMap = {'Delayed' : 'red', 'InTime' : 'green', 'Unknown' : 'grey'}
-        sns.barplot(df, x='status', y='departures', hue='status', palette=colorMap)
+        sns.barplot(df, x='Status', y='departures', hue='Status', palette=colorMap)
         plt.tight_layout()
         plt.savefig(f'./Charts/departuresPerStatus.{fileType}', bbox_inches='tight')
         plt.close()
@@ -67,13 +62,12 @@ def departuresPerStatus():
 
 def statusHeatmap():
     try:
-        cursor.execute("SELECT LineId, ScheduledTime, Status from main_table ORDER BY ScheduledTime")
-        data = cursor.fetchall()
-        df = pandas.DataFrame(data, columns=['LineId', 'scheduledTime', 'status'])
+        query = "SELECT LineId, ScheduledTime, Status from main_table ORDER BY ScheduledTime"
+        df = pandas.read_sql_query(query, conn)
         valueMap = {'Delayed' : 2, 'Unknown' : 1, 'InTime' : 0}
-        df['status'] = df['status'].map(valueMap)
-        df['scheduledTime'] = pandas.to_datetime(df['scheduledTime'], unit='s').dt.strftime('%H:%M')
-        heatMap = df.pivot(index='LineId', columns='scheduledTime', values='status')
+        df['Status'] = df['Status'].map(valueMap)
+        df['ScheduledTime'] = pandas.to_datetime(df['ScheduledTime'], unit='s').dt.strftime('%H:%M')
+        heatMap = df.pivot(index='LineId', columns='ScheduledTime', values='Status')
         plt.style.use('dark_background')
         fig, ax = plt.subplots()
         ax.grid(False)
@@ -86,7 +80,7 @@ def statusHeatmap():
 
 def averageDelayPerLine():
     try:
-        cursor.execute("""
+        query = """
                 WITH latest_delays AS (
                     SELECT MainId, DelayTime
                     FROM delay_table d1
@@ -99,9 +93,8 @@ def averageDelayPerLine():
                 JOIN latest_delays ld ON m.Id = ld.MainId
                 GROUP BY m.LineId
                 ORDER BY avgDelay DESC;
-                """)
-        data = cursor.fetchall()
-        df = pandas.DataFrame(data, columns=['LineId', 'avgDelay'])
+                """
+        df = pandas.read_sql_query(query, conn)
         sns.barplot(df, x='LineId', y='avgDelay', order=df['LineId'])
         plt.xticks(rotation=-90)
         plt.tight_layout()
@@ -112,7 +105,7 @@ def averageDelayPerLine():
 
 def averageDelayPerPlatform():
     try:
-        cursor.execute("""
+        query = """
                 WITH latest_delays AS (
                     SELECT MainId, DelayTime
                     FROM delay_table d1
@@ -125,9 +118,8 @@ def averageDelayPerPlatform():
                 JOIN latest_delays ld ON m.Id = ld.MainId
                 GROUP BY m.Platform
                 ORDER BY avgDelay DESC;
-                """)
-        data = cursor.fetchall()
-        df = pandas.DataFrame(data, columns=['Platform', 'avgDelay'])
+                """
+        df = pandas.read_sql_query(query, conn)
         sns.barplot(df, x='Platform', y='avgDelay', order=df['Platform'])
         plt.tight_layout()
         plt.savefig(f'./Charts/averageDelayPerPlatform.{fileType}', bbox_inches='tight')
@@ -137,7 +129,7 @@ def averageDelayPerPlatform():
 
 def delayHeatmap():
     try:
-        cursor.execute("""
+        query = """
                 WITH latestDelays AS (
                     SELECT MainId, DelayTime
                     FROM delay_table d1
@@ -149,9 +141,8 @@ def delayHeatmap():
                 FROM main_table m
                 JOIN latestDelays ld ON ld.MainId = m.Id
                 ORDER BY ld.DelayTime
-                """)
-        data = cursor.fetchall()
-        df = pandas.DataFrame(data, columns=['LineId', 'ScheduledTime', 'DelayTime'])
+                """
+        df = pandas.read_sql_query(query, conn)
         df['ScheduledTime'] = pandas.to_datetime(df['ScheduledTime'], unit='s').dt.strftime('%H:%M')
         heatMap = df.pivot(index='LineId', columns='ScheduledTime', values='DelayTime')
         plt.style.use('dark_background')
@@ -166,7 +157,7 @@ def delayHeatmap():
         print(f'an exception occured while creating delay heatmap: {e}')
 
 
-fileType = 'svg' #valid file types: png, jpeg, pdf, svg, tiff
+fileType = 'png' #valid file types: png, jpeg, pdf, svg, tiff
 if not os.path.isdir('./Charts'):
     os.makedirs('./Charts')
 
