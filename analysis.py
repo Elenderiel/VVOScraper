@@ -4,49 +4,85 @@ import seaborn as sns
 import pandas
 import os
 
+
+showPlots = True
+savePlots = True
+fileType = 'png'                    #valid file types: png, jpg, pdf, svg, tiff
+filePath = './Charts'
+
+if not os.path.isdir(filePath):
+    os.makedirs(filePath)
+
+sns.set_theme(palette='flare')
+
+conn = sql.connect('departureDatabase.db')
+cursor = conn.cursor()
+
+
+def main():
+    #comment out charts that are not needed
+    departuresPerLine()
+    departuresPerPlatform()
+    departuresPerNetwork()
+    departuresPerType()
+    departuresPerStatus()
+    averageDelayPerLine()
+    averageDelayPerPlatform()
+    statusHeatmap()
+    delayHeatmap()
+
+    conn.close()
+
+
+def handlePlotFiles(name):
+    plt.tight_layout()
+    filePath.rstrip('/')
+    if savePlots: 
+        plt.savefig(f'{filePath}/{name}.{fileType}', bbox_inches='tight')
+    if showPlots: 
+        plt.show()
+    plt.close()
+
+
 def departuresPerLine():
     try:
         query = "SELECT LineName, COUNT(*) AS departures FROM main_table GROUP BY LineName ORDER BY departures DESC"
         df = pandas.read_sql_query(query, conn)
         sns.barplot(df, x='LineName', y='departures', order=df['LineName'])
-        plt.tight_layout()
-        plt.savefig(f'./Charts/departuresPerLine.{fileType}', bbox_inches='tight')
-        plt.close()
+        handlePlotFiles('departuresPerLine')
     except Exception as e:
         print(f'an exception occured while analysing departures per line: {e}')
+
 
 def departuresPerPlatform():
     try:
         query = "SELECT Platform, COUNT(*) AS departures FROM main_table GROUP BY Platform ORDER BY departures DESC"
         df = pandas.read_sql_query(query, conn)
         sns.barplot(df, x='Platform', y='departures', order=df['Platform'])
-        plt.tight_layout()
-        plt.savefig(f'./Charts/departuresPerPlatform.{fileType}', bbox_inches='tight')
-        plt.close()
+        handlePlotFiles('departuresPerPlatform')
     except Exception as e:
         print(f'an exception occured while analysing departures per platform: {e}')
+
 
 def departuresPerNetwork():
     try:
         query = "SELECT Network, COUNT(*) AS departures FROM main_table GROUP BY Network ORDER BY departures DESC"
         df = pandas.read_sql_query(query, conn)
         sns.barplot(df, x='Network', y='departures', order=df['Network'])
-        plt.tight_layout()
-        plt.savefig(f'./Charts/departuresPerNetwork.{fileType}', bbox_inches='tight')
-        plt.close()
+        handlePlotFiles('departuresPerNetwork')
     except Exception as e:
         print(f'an exception occured while analyzing departures per Network: {e}')
+        
 
 def departuresPerType():
     try:
         query = "SELECT TransportationType as type, COUNT(*) as departures FROM main_table GROUP BY type ORDER BY departures"
         df = pandas.read_sql_query(query, conn)
         sns.barplot(df, x='type', y='departures', order=df['type'])
-        plt.tight_layout()
-        plt.savefig(f'./Charts/departuresPerType.{fileType}', bbox_inches='tight')
-        plt.close()
+        handlePlotFiles('departuresPerType')
     except Exception as e:
         print(f'an exception occured while analysing departures per transportation type: {e}')
+
 
 def departuresPerStatus():
     try:
@@ -54,11 +90,10 @@ def departuresPerStatus():
         df = pandas.read_sql_query(query, conn)
         colorMap = {'Delayed' : 'red', 'InTime' : 'green', 'Unknown' : 'grey'}
         sns.barplot(df, x='Status', y='departures', hue='Status', palette=colorMap)
-        plt.tight_layout()
-        plt.savefig(f'./Charts/departuresPerStatus.{fileType}', bbox_inches='tight')
-        plt.close()
+        handlePlotFiles('departuresPerStatus')
     except Exception as e:
         print(f'an exception occured while analysing departures per delay status: {e}')
+
 
 def statusHeatmap():
     try:
@@ -68,15 +103,15 @@ def statusHeatmap():
         df['Status'] = df['Status'].map(valueMap)
         df['ScheduledTime'] = pandas.to_datetime(df['ScheduledTime'], unit='s').dt.strftime('%H:%M')
         heatMap = df.pivot(index='LineId', columns='ScheduledTime', values='Status')
+
         plt.style.use('dark_background')
         fig, ax = plt.subplots()
         ax.grid(False)
         sns.heatmap(heatMap, cmap='vlag', linewidths=0.05, linecolor='#333', cbar=False, ax=ax)
-        plt.tight_layout()
-        plt.savefig(f'./Charts/statusHeatmap.{fileType}', bbox_inches='tight')
-        plt.close()
+        handlePlotFiles('statusHeatmap')
     except Exception as e:
         print(f'an exception occured while analysing status over time: {e}')
+
 
 def averageDelayPerLine():
     try:
@@ -97,11 +132,10 @@ def averageDelayPerLine():
         df = pandas.read_sql_query(query, conn)
         sns.barplot(df, x='LineId', y='avgDelay', order=df['LineId'])
         plt.xticks(rotation=-90)
-        plt.tight_layout()
-        plt.savefig(f'./Charts/averageDelayPerLine.{fileType}', bbox_inches='tight')
-        plt.close()
+        handlePlotFiles('averageDelayPerLine')
     except Exception as e:
         print(f'an exception occured while analysing average delay per line: {e}')
+
 
 def averageDelayPerPlatform():
     try:
@@ -121,11 +155,10 @@ def averageDelayPerPlatform():
                 """
         df = pandas.read_sql_query(query, conn)
         sns.barplot(df, x='Platform', y='avgDelay', order=df['Platform'])
-        plt.tight_layout()
-        plt.savefig(f'./Charts/averageDelayPerPlatform.{fileType}', bbox_inches='tight')
-        plt.close()
+        handlePlotFiles('averageDelayPerPlatform')
     except Exception as e:
         print(f'an exception occured while analysing average delay per platform: {e}')
+
 
 def delayHeatmap():
     try:
@@ -145,35 +178,15 @@ def delayHeatmap():
         df = pandas.read_sql_query(query, conn)
         df['ScheduledTime'] = pandas.to_datetime(df['ScheduledTime'], unit='s').dt.strftime('%H:%M')
         heatMap = df.pivot(index='LineId', columns='ScheduledTime', values='DelayTime')
+
         plt.style.use('dark_background')
         fig, ax = plt.subplots()
         ax.grid(False)
         vmax = max(abs(df['DelayTime'].min()), abs(df['DelayTime'].max()))
         sns.heatmap(heatMap, linecolor='#333', linewidths=0.1, cmap='coolwarm', ax=ax, vmax=vmax, vmin=-vmax)
-        plt.tight_layout()
-        plt.savefig(f'./Charts/delayHeatmap.{fileType}', bbox_inches='tight')
-        plt.close()
+        handlePlotFiles('delayHeatmap')
     except Exception as e:
         print(f'an exception occured while creating delay heatmap: {e}')
 
 
-fileType = 'png' #valid file types: png, jpeg, pdf, svg, tiff
-if not os.path.isdir('./Charts'):
-    os.makedirs('./Charts')
-
-conn = sql.connect('departureDatabase.db')
-cursor = conn.cursor()
-sns.set_theme(palette='flare')
-
-#comment out charts that are not needed
-departuresPerLine()
-departuresPerPlatform()
-departuresPerNetwork()
-departuresPerType()
-departuresPerStatus()
-averageDelayPerLine()
-averageDelayPerPlatform()
-statusHeatmap()
-delayHeatmap()
-
-conn.close()
+main()
