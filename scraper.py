@@ -1,8 +1,12 @@
-import requests, schedule, os.path
+import requests
+import schedule
+import os.path
+from time import mktime, sleep
+
 import sqlite3 as sql
 from schedule import repeat, every
 from datetime import datetime, timezone, time
-from time import mktime, sleep
+
 
 url = 'https://webapi.vvo-online.de/dm'
 numberOfDepartures = 3
@@ -20,6 +24,7 @@ if os.path.exists('departureDatabase.db'):
 else:
     exit('\033[91m' + 'please run "initializeDatabase.py" first to make sure the database is initialized correctly' + '\033[0m')
 
+
 #inserting the data into the primary and secondary table
 def insertIntoDatabase(date, data):
     try:
@@ -34,6 +39,7 @@ def insertIntoDatabase(date, data):
         conn.commit()
     except Exception as e:
         print(f'{date} ... ' + '\033[91m' + 'an exception occured while inserting values into database: ' + '\033[0m' + f'{e}')
+
 
 #extracting and formating data from response.json() object
 def extractData(timestamp, date, departures):
@@ -64,8 +70,10 @@ def extractData(timestamp, date, departures):
     except Exception as e:
         print(f'{date} ... ' + '\033[91m' + 'an exception occured while exctracting information from response: ' + '\033[0m' + f'{e}')
 
+
 #class to store information in an instance before inserting it into a database, to later be able to add features more easily
 class Departure:
+
     def __init__(self, network:str, name:str, scheduledTime:int, direction:str, platform:int, transportationType:str, occupancy:str, status:str, routeChanges:int, cancelReasons:str, timestamp:int, realTime:int):
         self.id = name + '|' + str(scheduledTime) + '|' + direction
         self.lineId = name + '|' + direction
@@ -86,6 +94,7 @@ class Departure:
         time = int(time[:-8])
         return datetime.fromtimestamp(time)
 
+
 #schedule loop to fetch upcoming departure information from vvo api until time limit is met
 @repeat(every(intervalInMin).minutes.until(time(15, 32, 0)))
 def getDepartures():
@@ -104,7 +113,9 @@ def getDepartures():
     except Exception as e:
         print(f'{date} ... ' + '\033[91m' + 'an exception occured while fetching: ' + '\033[0m' + f'{e}')
 
+
 getDepartures()
+
 while True:
     schedule.run_pending()
     if not schedule.get_jobs():
