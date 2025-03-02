@@ -12,9 +12,12 @@ To initialize the database, run 'initializeDatabase.py'. Set the interval (betwe
 | ------- | ------ |
 | numberOfDepartures | amount of upcoming connections the data is fetched for |
 | intervalInMin | interval in minutes in which the requests are made |
+| timeZone | Integer, offset to the UTC timezone (0 for UTC+00:00, 1 for UTC+01:00, ...) |
 | stopId | Id of the station you want to analyse (to get the id go to https://www.vvo-online.de/de/fahrplan/fahrplanauskunft/ and search for connections from your stop. The stop id can be found in the url after 'originid=') |
 
 ![image placeholder](./resources/stopid.png)
+
+If you want to learn more about the VVO api, you can find more information in this [documentation](https://github.com/kiliankoe/vvo/blob/main/documentation/webapi.md)
 
 Set the end time (hour 0-23, minutes, seconds) of the schedule loop in the repeat decorator:
 

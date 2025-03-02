@@ -11,6 +11,7 @@ from datetime import datetime, timezone, time
 url = 'https://webapi.vvo-online.de/dm'
 numberOfDepartures = 3
 intervalInMin = 1
+timeZone = 1                                #enter the offset to the utc timezone (0 for utc)
 
 params = {
     'stopid' : 33000784,
@@ -98,7 +99,7 @@ class Departure:
 #schedule loop to fetch upcoming departure information from vvo api until time limit is met
 @repeat(every(intervalInMin).minutes.until(time(15, 32, 0)))
 def getDepartures():
-    timestamp = (int(mktime(datetime.now(timezone.utc).timetuple())) // 60 * 60) + 3600 #timestamp of request to determine time difference to scheduled time
+    timestamp = (int(mktime(datetime.now(timezone.utc).timetuple())) // 60 * 60) + (1 + timeZone)*3600 #timestamp of request to determine time difference to scheduled time
     date = datetime.fromtimestamp(timestamp)
     try:
         request = requests.get(url=url, params=params)
