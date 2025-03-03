@@ -22,15 +22,15 @@ cursor = conn.cursor()
 
 def main():
     #comment out charts that are not needed
-    departures_per_line()
+    #departures_per_line()
     #departures_per_platform()
     #departures_per_network()
     #departures_per_type()
     #departures_per_status()
     #average_delay_per_line()
     #average_delay_per_platform()
-    #status_heatmap()
-    #delay_heatmap()
+    status_heatmap()
+    delay_heatmap()
 
     conn.close()
 
@@ -43,6 +43,13 @@ def handle_plot_files(name):
     if showPlots: 
         plt.show()
     plt.close()
+
+
+def get_plot_size(length:int) -> tuple:
+    #get dynamic plot size based on number of data entries
+    colWidth = 0.3
+    plotWidth = max(10, length * colWidth - 10)
+    return (plotWidth, 6)
 
 
 def departures_per_line():
@@ -107,9 +114,11 @@ def status_heatmap():
         heatMap = df.pivot(index='LineId', columns='ScheduledTime', values='Status')
 
         plt.style.use('dark_background')
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=get_plot_size(len(df)))
         ax.grid(False)
-        sns.heatmap(heatMap, cmap='vlag', linewidths=0.05, linecolor='#333', cbar=False, ax=ax)
+        plot = sns.heatmap(heatMap, cmap='vlag', linewidths=0.05, linecolor='#333', cbar=False, ax=ax)
+        plot.set_xticks(plot.get_xticks())
+        plot.set_xticklabels(plot.get_xticklabels(), rotation=-90)
         handle_plot_files('status_heatmap')
     except Exception as e:
         print(f'an exception occured while analysing status over time: {e}')
@@ -185,7 +194,9 @@ def delay_heatmap():
         fig, ax = plt.subplots()
         ax.grid(False)
         vmax = max(abs(df['DelayTime'].min()), abs(df['DelayTime'].max()))
-        sns.heatmap(heatMap, linecolor='#333', linewidths=0.1, cmap='coolwarm', ax=ax, vmax=vmax, vmin=-vmax)
+        plot = sns.heatmap(heatMap, linecolor='#333', linewidths=0.1, cmap='coolwarm', ax=ax, vmax=vmax, vmin=-vmax)
+        plot.set_xticks(plot.get_xticks())
+        plot.set_xticklabels(plot.get_xticklabels(), rotation=-90)
         handle_plot_files('delay_heatmap')
     except Exception as e:
         print(f'an exception occured while creating delay heatmap: {e}')
